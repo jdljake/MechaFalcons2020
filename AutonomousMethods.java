@@ -64,7 +64,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name="Pushbot: Auto Drive By Encoder", group="Pushbot")
-public class EncoderTest extends LinearOpMode {
+public class AutonomousMethods extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -99,9 +99,6 @@ public class EncoderTest extends LinearOpMode {
         rightDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         middleDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-//        leftDrive.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
-//        rightDrive.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
-
         leftDrive.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
         rightDrive.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
         middleDrive.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
@@ -131,16 +128,13 @@ public class EncoderTest extends LinearOpMode {
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-//        encoderDrive(DRIVE_SPEED,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
-//        encoderDriveAngle(TURN_SPEED,  90, 5.0);
-//        encoderDrive(DRIVE_SPEED,  18.84955,  -18.84955, 5.0);
-        encoderDrive(DRIVE_SPEED,  25,  25, 5.0);
-        encoderMiddleDrive(DRIVE_SPEED,  7,  5.0);
-        encoderDriveAngle(TURN_SPEED,  90, 5.0);
-
-        encoderDrive(DRIVE_SPEED,  -7,  -7, 5.0);
-        encoderMiddleDrive(DRIVE_SPEED,  25,  5.0);
-        encoderDriveAngle(TURN_SPEED,  -90, 5.0);
+        
+        //call methods to move robot here
+        ///////////
+        ////////
+        //////
+        ////
+        //
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
