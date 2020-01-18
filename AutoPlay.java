@@ -71,6 +71,7 @@ public class AutoPlay extends LinearOpMode {
     private DcMotorEx leftDrive = null;
     private DcMotorEx rightDrive = null;
     private DcMotorEx middleDrive = null;
+    private DcMotorEx middleDrive2 = null;
 
     //    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     COUNTS_PER_MOTOR_REV    = 560 ;    // should be REV 20:1 HD HEX motor
@@ -91,13 +92,14 @@ public class AutoPlay extends LinearOpMode {
         leftDrive  = hardwareMap.get(DcMotorEx.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotorEx.class, "right_drive");
         middleDrive = hardwareMap.get(DcMotorEx.class, "middle_drive");
+        middleDrive2 = hardwareMap.get(DcMotorEx.class, "middle_drive2");
 
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
         leftDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        middleDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        middleDrive2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
 //        leftDrive.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
 //        rightDrive.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
@@ -105,6 +107,7 @@ public class AutoPlay extends LinearOpMode {
         leftDrive.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
         rightDrive.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
         middleDrive.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
+        middleDrive2.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");
@@ -113,10 +116,12 @@ public class AutoPlay extends LinearOpMode {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         middleDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        middleDrive2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         middleDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        middleDrive2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d", leftDrive.getCurrentPosition(), rightDrive.getCurrentPosition());
@@ -124,6 +129,7 @@ public class AutoPlay extends LinearOpMode {
         telemetry.addData("leftDrive Target Position Tolerance", leftDrive.getTargetPositionTolerance());
         telemetry.addData("rightDrive Target Position Tolerance", rightDrive.getTargetPositionTolerance());
         telemetry.addData("middleDrive Target Position Tolerance", middleDrive.getTargetPositionTolerance());
+        telemetry.addData("middleDrive2 Target Position Tolerance", middleDrive2.getTargetPositionTolerance());
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
@@ -276,27 +282,33 @@ public class AutoPlay extends LinearOpMode {
             // Determine new target position, and pass to motor controller
             newMiddleTarget = middleDrive.getCurrentPosition() + (int)(middleInches * COUNTS_PER_INCH);
             middleDrive.setTargetPosition(newMiddleTarget);
+            middleDrive2.setTargetPosition(newMiddleTarget);
 
             // Turn On RUN_TO_POSITION
             middleDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            middleDrive2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
             runtime.reset();
             middleDrive.setPower(Math.abs(speed));
+            middleDrive2.setPower(Math.abs(speed));
 
             while (opModeIsActive() && (runtime.seconds() < timeoutS) && middleDrive.isBusy()) {
 
                 // Display it for the driver.
                 telemetry.addData("Path1",  "Running to %7d :%7d", newMiddleTarget);
                 telemetry.addData("Path2",  "Running at %7d :%7d", middleDrive.getCurrentPosition());
+                telemetry.addData("Middle2 Path2",  "Running at %7d :%7d", middleDrive2.getCurrentPosition());
                 telemetry.update();
             }
 
             // Stop all motion;
             middleDrive.setPower(0);
+            middleDrive2.setPower(0);
 
             // Turn off RUN_TO_POSITION
             middleDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            middleDrive2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             //  sleep(250);   // optional pause after each move
         }
