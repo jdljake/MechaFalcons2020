@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -72,6 +73,10 @@ public class AutoPlay extends LinearOpMode {
     private DcMotorEx rightDrive = null;
     private DcMotorEx middleDrive = null;
     private DcMotorEx middleDrive2 = null;
+    //private Servo leftLatchServo = null;
+    //private Servo rightLatchServo = null;
+    //private Servo servoGrabber= null;
+
 
     //    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     COUNTS_PER_MOTOR_REV    = 560 ;    // should be REV 20:1 HD HEX motor
@@ -93,6 +98,9 @@ public class AutoPlay extends LinearOpMode {
         rightDrive = hardwareMap.get(DcMotorEx.class, "right_drive");
         middleDrive = hardwareMap.get(DcMotorEx.class, "middle_drive");
         middleDrive2 = hardwareMap.get(DcMotorEx.class, "middle_drive2");
+        //leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
+        //rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
+        //servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
 
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -130,6 +138,8 @@ public class AutoPlay extends LinearOpMode {
         telemetry.addData("rightDrive Target Position Tolerance", rightDrive.getTargetPositionTolerance());
         telemetry.addData("middleDrive Target Position Tolerance", middleDrive.getTargetPositionTolerance());
         telemetry.addData("middleDrive2 Target Position Tolerance", middleDrive2.getTargetPositionTolerance());
+        //telemetry.addData("leftLatchServo position", leftLatchServo.getPosition());
+        //telemetry.addData("rightLatchServo position", rightLatchServo.getPosition());
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
@@ -141,22 +151,22 @@ public class AutoPlay extends LinearOpMode {
         //Moving Base to construction zone
         encoderDrive(DRIVE_SPEED,  30,  30, 5.0);
         encoderDriveAngle(TURN_SPEED,  -90, 5.0);
-        //Grab Base
+        //leftLatchServo.setPosition(1);
+        //rightLatchServo.setPosition(0);
         encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
-        //Let go Base
+        //leftLatchServo.setPosition(0.5);
+        //rightLatchServo.setPosition(0.5);
         encoderDriveAngle(TURN_SPEED,  90, 5.0);
 
         //Bulding Blocks
         for(int i = 0; i < 1; i++){
             encoderMiddleDrive(DRIVE_SPEED,  60,  5.0);
             encoderDrive(DRIVE_SPEED,  34,  34, 5.0);
-            //Grip Block
+            //servoGrabber.setPosition(0.9);
             encoderDrive(DRIVE_SPEED,  -34,  -34, 5.0);
             encoderDriveAngle(TURN_SPEED,  -90, 5.0);
             encoderDrive(DRIVE_SPEED,  60,60  , 5.0);
-            //Elevate at i
-            //Ungrip Block
-            //Deelevate
+            //servoGrabber.setPosition(0.32);
             encoderDriveAngle(TURN_SPEED,  90, 5.0);
         }
 
@@ -168,7 +178,7 @@ public class AutoPlay extends LinearOpMode {
     }
 
     /*
-     *  Method to perfmorm a relative move, based on encoder counts.
+     *  Method to perform a relative move, based on encoder counts.
      *  Encoders are not reset as the move is based on the current position.
      *  Move will stop if any of three conditions occur:
      *  1) Move gets to the desired position
