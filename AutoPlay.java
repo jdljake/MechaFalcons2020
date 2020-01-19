@@ -189,13 +189,13 @@ public class AutoPlay extends LinearOpMode {
 
         //Moving Base to construction zone
         encoderDrive(DRIVE_SPEED,  30,  30, 5.0);
-        encoderDriveAngle(TURN_SPEED,  -90, 5.0);
+        rotate(90, 0.7);
         leftLatchServo.setPosition(1);
         rightLatchServo.setPosition(0);
         encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
         leftLatchServo.setPosition(0.5);
         rightLatchServo.setPosition(0.5);
-        encoderDriveAngle(TURN_SPEED,  90, 5.0);
+        rotate(-90, 0.7);
 
         //Bulding Blocks
         for(int i = 0; i < 1; i++){
@@ -203,10 +203,10 @@ public class AutoPlay extends LinearOpMode {
             encoderDrive(DRIVE_SPEED,  34,  34, 5.0);
             //servoGrabber.setPosition(0.9);
             encoderDrive(DRIVE_SPEED,  -34,  -34, 5.0);
-            encoderDriveAngle(TURN_SPEED,  -90, 5.0);
+            rotate(90, 0.7);
             encoderDrive(DRIVE_SPEED,  60,60  , 5.0);
             //servoGrabber.setPosition(0.32);
-            encoderDriveAngle(TURN_SPEED,  90, 5.0);
+            rotate(-90, 0.7);
         }
 
         //Dock
