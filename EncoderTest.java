@@ -195,10 +195,10 @@ public class EncoderTest extends LinearOpMode {
                 currentLeftPower = leftDrive.getPower();
                 currentRightPower = rightDrive.getPower();
 
-                if(currentLeftPower <= 1.0){
+                if(currentLeftPower < 1.0){
                     leftDrive.setPower(currentLeftPower + 0.01);
                 }
-                if(currentRightPower <= 1.0){
+                if(currentRightPower < 1.0){
                     rightDrive.setPower(currentRightPower + 0.01);
                 }
 
@@ -271,6 +271,8 @@ public class EncoderTest extends LinearOpMode {
     private void encoderMiddleDrive(double speed, double middleInches, double timeoutS) {
 
         int newMiddleTarget;
+        double currentMiddlePower;
+        double currentMiddle2Power;
 
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
@@ -290,6 +292,16 @@ public class EncoderTest extends LinearOpMode {
             middleDrive2.setPower(Math.abs(speed));
 
             while (opModeIsActive() && (runtime.seconds() < timeoutS) && (middleDrive.isBusy() || middleDrive2.isBusy())) {
+
+                currentMiddlePower = middleDrive.getPower();
+                currentMiddle2Power = middleDrive2.getPower();
+
+                if(currentMiddlePower < 1.0){
+                    middleDrive.setPower(currentMiddlePower + 0.01);
+                }
+                if(currentMiddle2Power < 1.0){
+                    middleDrive2.setPower(currentMiddle2Power + 0.01);
+                }
 
                 // Display it for the driver.
                 telemetry.addData("Path1",  "Running to %7d :%7d", newMiddleTarget);
