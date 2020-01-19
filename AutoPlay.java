@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -78,8 +79,8 @@ public class AutoPlay extends LinearOpMode {
     private DcMotorEx rightDrive = null;
     private DcMotorEx middleDrive = null;
     private DcMotorEx middleDrive2 = null;
-    //private Servo leftLatchServo = null;
-    //private Servo rightLatchServo = null;
+    private Servo leftLatchServo = null;
+    private Servo rightLatchServo = null;
     //private Servo servoGrabber= null;
 
     //imu stuff
@@ -107,8 +108,8 @@ public class AutoPlay extends LinearOpMode {
         rightDrive = hardwareMap.get(DcMotorEx.class, "right_drive");
         middleDrive = hardwareMap.get(DcMotorEx.class, "middle_drive");
         middleDrive2 = hardwareMap.get(DcMotorEx.class, "middle_drive2");
-        //leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
-        //rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
+        leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
+        rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
         //servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
 
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -189,11 +190,11 @@ public class AutoPlay extends LinearOpMode {
         //Moving Base to construction zone
         encoderDrive(DRIVE_SPEED,  30,  30, 5.0);
         encoderDriveAngle(TURN_SPEED,  -90, 5.0);
-        //leftLatchServo.setPosition(1);
-        //rightLatchServo.setPosition(0);
+        leftLatchServo.setPosition(1);
+        rightLatchServo.setPosition(0);
         encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
-        //leftLatchServo.setPosition(0.5);
-        //rightLatchServo.setPosition(0.5);
+        leftLatchServo.setPosition(0.5);
+        rightLatchServo.setPosition(0.5);
         encoderDriveAngle(TURN_SPEED,  90, 5.0);
 
         //Bulding Blocks
@@ -216,8 +217,8 @@ public class AutoPlay extends LinearOpMode {
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
-            telemetry.addData("Path", "Complete");
-            telemetry.update();
+        telemetry.addData("Path", "Complete");
+        telemetry.update();
 
     }
 
