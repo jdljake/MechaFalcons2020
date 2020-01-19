@@ -34,8 +34,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -64,8 +69,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Pushbot: Auto Drive By Encoder", group="Pushbot")
-public class AutoPlay extends LinearOpMode {
+@Autonomous(name="EncoderTest", group="Pushbot")
+public class EncoderTest extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -77,6 +82,11 @@ public class AutoPlay extends LinearOpMode {
     //private Servo rightLatchServo = null;
     //private Servo servoGrabber= null;
 
+    //imu stuff
+    BNO055IMU               imu;
+    Orientation             lastAngles = new Orientation();
+    double                  globalAngle, power = .30, correction;
+    //
 
     //    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     COUNTS_PER_MOTOR_REV    = 560 ;    // should be REV 20:1 HD HEX motor
@@ -92,7 +102,6 @@ public class AutoPlay extends LinearOpMode {
 
         /*
          * Initialize the drive system variables.
-         * The init() method of the hardware class does all the work here
          */
         leftDrive  = hardwareMap.get(DcMotorEx.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotorEx.class, "right_drive");
@@ -107,10 +116,8 @@ public class AutoPlay extends LinearOpMode {
 
         leftDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        middleDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         middleDrive2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
-//        leftDrive.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
-//        rightDrive.setVelocityPIDFCoefficients(1.17, 0.117, 0, 11.7);
 
         leftDrive.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
         rightDrive.setVelocityPIDFCoefficients(5.17, 0.117, 0, 11.7);
@@ -134,19 +141,50 @@ public class AutoPlay extends LinearOpMode {
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d", leftDrive.getCurrentPosition(), rightDrive.getCurrentPosition());
         telemetry.addData("Counts Per Inch:",  "%.2f", COUNTS_PER_INCH);
-        telemetry.addData("leftDrive Target Position Tolerance", leftDrive.getTargetPositionTolerance());
-        telemetry.addData("rightDrive Target Position Tolerance", rightDrive.getTargetPositionTolerance());
-        telemetry.addData("middleDrive Target Position Tolerance", middleDrive.getTargetPositionTolerance());
-        telemetry.addData("middleDrive2 Target Position Tolerance", middleDrive2.getTargetPositionTolerance());
         //telemetry.addData("leftLatchServo position", leftLatchServo.getPosition());
         //telemetry.addData("rightLatchServo position", rightLatchServo.getPosition());
         telemetry.update();
 
+        //////////////////////////// imu stuff
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode                = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled      = false;
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        imu.initialize(parameters);
+
+        telemetry.addData("Mode", "calibrating...");
+        telemetry.update();
+
+        // make sure the imu gyro is calibrated before continuing.
+        while (!isStopRequested() && !imu.isGyroCalibrated())
+        {
+            sleep(50);
+            idle();
+        }
+
+        telemetry.addData("Mode", "waiting for start");
+        telemetry.addData("imu calib status", imu.getCalibrationStatus().toString());
+        telemetry.update();
+        ////////////////////////////
+
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        // Step through each leg of the path,
-        // Note: Reverse movement is obtained by setting a negative distance (not speed)
+
+// Step through each leg of the path,
+// Note: Reverse movement is obtained by setting a negative distance (not speed)
+////////////////////////////////////////////////////////////////////////////////////
+
+
 
         //Moving Base to construction zone
         encoderDrive(DRIVE_SPEED,  30,  30, 5.0);
@@ -173,12 +211,18 @@ public class AutoPlay extends LinearOpMode {
         //Dock
         encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
 
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
+
+
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+            telemetry.addData("Path", "Complete");
+            telemetry.update();
+
     }
 
     /*
-     *  Method to perform a relative move, based on encoder counts.
+     *  Method to perfmorm a relative move, based on encoder counts.
      *  Encoders are not reset as the move is based on the current position.
      *  Move will stop if any of three conditions occur:
      *  1) Move gets to the desired position
@@ -186,11 +230,15 @@ public class AutoPlay extends LinearOpMode {
      *  3) Driver stops the opmode running.
      */
 
+    ///encoder drive stuff
+
     public void encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS) {
         int newLeftTarget;
         int newRightTarget;
+        double currentLeftPower;
+        double currentRightPower;
 
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
@@ -207,8 +255,9 @@ public class AutoPlay extends LinearOpMode {
 
             // reset the timeout time and start motion.
             runtime.reset();
-            leftDrive.setPower(Math.abs(speed));
-            rightDrive.setPower(Math.abs(speed));
+//            leftDrive.setPower(Math.abs(speed));
+//            rightDrive.setPower(Math.abs(speed));
+
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -216,11 +265,25 @@ public class AutoPlay extends LinearOpMode {
             // always end the motion as soon as possible.
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
-            while (opModeIsActive() && (runtime.seconds() < timeoutS) && (leftDrive.isBusy() || rightDrive.isBusy())) {
+            while (opModeIsActive() &&
+//                    (runtime.seconds() < timeoutS) &&
+                    (leftDrive.isBusy() || rightDrive.isBusy())) {
+
+                currentLeftPower = leftDrive.getPower();
+                currentRightPower = rightDrive.getPower();
+
+                if(currentLeftPower < 1.0){
+                    leftDrive.setPower(currentLeftPower + 0.01);
+                }
+                if(currentRightPower < 1.0){
+                    rightDrive.setPower(currentRightPower + 0.01);
+                }
 
                 // Display it for the driver.
                 telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget);
                 telemetry.addData("Path2",  "Running at %7d :%7d", leftDrive.getCurrentPosition(), rightDrive.getCurrentPosition());
+                telemetry.addData("currentLeftPower", leftDrive.getPower());
+                telemetry.addData("currentRightPower", rightDrive.getPower());
                 telemetry.update();
             }
 
@@ -260,7 +323,7 @@ public class AutoPlay extends LinearOpMode {
             rightDrive.setPower(Math.abs(speed));
 
             while (opModeIsActive() &&
-                    (runtime.seconds() < timeoutS) &&
+//                    (runtime.seconds() < timeoutS) &&
                     (leftDrive.isBusy() || rightDrive.isBusy())) {
 
                 // Display it for the driver.
@@ -324,5 +387,130 @@ public class AutoPlay extends LinearOpMode {
         }
     }
 
+    //end encoder drive stuff
+
+
+    ///gyro stuff
+
+    /**
+     * Resets the cumulative angle tracking to zero.
+     */
+    private void resetAngle()
+    {
+        lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+        globalAngle = 0;
+    }
+
+    /**
+     * Get current cumulative angle rotation from last reset.
+     * @return Angle in degrees. + = left, - = right.
+     */
+    private double getAngle()
+    {
+        // We experimentally determined the Z axis is the axis we want to use for heading angle.
+        // We have to process the angle because the imu works in euler angles so the Z axis is
+        // returned as 0 to +180 or 0 to -180 rolling back to -179 or +179 when rotation passes
+        // 180 degrees. We detect this transition and track the total cumulative angle of rotation.
+
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
+
+        if (deltaAngle < -180)
+            deltaAngle += 360;
+        else if (deltaAngle > 180)
+            deltaAngle -= 360;
+
+        globalAngle += deltaAngle;
+
+        lastAngles = angles;
+
+        return globalAngle;
+    }
+
+    /**
+     * See if we are moving in a straight line and if not return a power correction value.
+     * @return Power adjustment, + is adjust left - is adjust right.
+     */
+    private double checkDirection()
+    {
+        // The gain value determines how sensitive the correction is to direction changes.
+        // You will have to experiment with your robot to get small smooth direction changes
+        // to stay on a straight line.
+        double correction, angle, gain = .10;
+
+        angle = getAngle();
+
+        if (angle == 0)
+            correction = 0;             // no adjustment.
+        else
+            correction = -angle;        // reverse sign of angle for correction.
+
+        correction = correction * gain;
+
+        return correction;
+    }
+
+    /**
+     * Rotate left or right the number of degrees. Does not support turning more than 180 degrees.
+     * @param degrees Degrees to turn, + is left - is right
+     */
+    public void rotate(int degrees, double power)
+    {
+        double  leftPower, rightPower;
+
+        // restart imu movement tracking.
+        resetAngle();
+
+        // getAngle() returns + when rotating counter clockwise (left) and - when rotating
+        // clockwise (right).
+
+        if (degrees < 0)
+        {   // turn right.
+            leftPower = power;
+            rightPower = -power;
+        }
+        else if (degrees > 0)
+        {   // turn left.
+            leftPower = -power;
+            rightPower = power;
+
+        }
+        else return;
+
+        // set power to rotate.
+        leftDrive.setPower(leftPower);
+        rightDrive.setPower(rightPower);
+
+        // rotate until turn is completed.
+        if (degrees < 0)
+        {
+            // On right turn we have to get off zero first.
+            while (opModeIsActive() && getAngle() == 0) {}
+
+            while (opModeIsActive() && getAngle() > degrees) {
+                telemetry.addData("getAngleDuringRightTurn()", getAngle());
+                telemetry.update();
+            }
+        }
+        else    // left turn.
+            while (opModeIsActive() && getAngle() < degrees) {
+                telemetry.addData("getAngleDuringLeftTurn()", getAngle());
+                telemetry.update();
+            }
+
+        // turn the motors off.
+        rightDrive.setPower(0);
+        leftDrive.setPower(0);
+
+        // wait for rotation to stop.
+        sleep(1000);
+
+        // reset angle tracking on new heading.
+        resetAngle();
+    }
+
+    ///end gyro stuff
 
 }
