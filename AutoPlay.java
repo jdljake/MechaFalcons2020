@@ -196,18 +196,16 @@ public class AutoPlay extends LinearOpMode {
         leftLatchServo.setPosition(0.5);
         rightLatchServo.setPosition(0.5);
         rotate(90, 0.7);
+        
 
-        //Bulding Blocks
-        for(int i = 0; i < 1; i++){
-            encoderMiddleDrive(DRIVE_SPEED,  60,  5.0);
-            encoderDrive(DRIVE_SPEED,  34,  34, 5.0);
-            //servoGrabber.setPosition(0.9);
-            encoderDrive(DRIVE_SPEED,  -34,  -34, 5.0);
-            rotate(90, 0.7);
-            encoderDrive(DRIVE_SPEED,  60,60  , 5.0);
-            //servoGrabber.setPosition(0.32);
-            rotate(-90, 0.7);
-        }
+        encoderMiddleDrive(DRIVE_SPEED,  60,  5.0);
+        encoderDrive(DRIVE_SPEED,  34,  34, 5.0);
+        //servoGrabber.setPosition(0.9);
+        encoderDrive(DRIVE_SPEED,  -34,  -34, 5.0);
+        rotate(90, 0.7);
+        encoderDrive(DRIVE_SPEED,  60,60  , 5.0);
+        //servoGrabber.setPosition(0.32);
+        rotate(-90, 0.7);
 
         //Dock
         encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
