@@ -189,13 +189,13 @@ public class AutoPlay extends LinearOpMode {
 
         //Moving Base to construction zone
         encoderDrive(DRIVE_SPEED,  30,  30, 5.0);
-        rotate(90, 0.7);
+        rotate(-90, 0.7);
         leftLatchServo.setPosition(1);
         rightLatchServo.setPosition(0);
         encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
         leftLatchServo.setPosition(0.5);
         rightLatchServo.setPosition(0.5);
-        rotate(-90, 0.7);
+        rotate(90, 0.7);
 
         //Bulding Blocks
         for(int i = 0; i < 1; i++){
@@ -267,7 +267,7 @@ public class AutoPlay extends LinearOpMode {
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
-//                    (runtime.seconds() < timeoutS) &&
+                    (runtime.seconds() < timeoutS) &&
                     (leftDrive.isBusy() || rightDrive.isBusy())) {
 
                 currentLeftPower = leftDrive.getPower();
@@ -324,12 +324,13 @@ public class AutoPlay extends LinearOpMode {
             rightDrive.setPower(Math.abs(speed));
 
             while (opModeIsActive() &&
-//                    (runtime.seconds() < timeoutS) &&
+                    (runtime.seconds() < timeoutS) &&
                     (leftDrive.isBusy() || rightDrive.isBusy())) {
 
                 // Display it for the driver.
                 telemetry.addData("Path1", "Running to %7d :%7d", newLeftAngleTarget, newRightAngleTarget);
-                telemetry.addData("Path2", "Running at %7d :%7d", leftDrive.getCurrentPosition(), rightDrive.getCurrentPosition());
+                telemetry.addData("LeftDrivePos", leftDrive.getCurrentPosition());
+                telemetry.addData("RightDrivePos", rightDrive.getCurrentPosition());
                 telemetry.update();
             }
 
@@ -349,6 +350,8 @@ public class AutoPlay extends LinearOpMode {
     private void encoderMiddleDrive(double speed, double middleInches, double timeoutS) {
 
         int newMiddleTarget;
+        double currentMiddlePower;
+        double currentMiddle2Power;
 
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
@@ -364,15 +367,25 @@ public class AutoPlay extends LinearOpMode {
 
             // reset the timeout time and start motion.
             runtime.reset();
-            middleDrive.setPower(Math.abs(speed));
-            middleDrive2.setPower(Math.abs(speed));
+//            middleDrive.setPower(Math.abs(speed));
+//            middleDrive2.setPower(Math.abs(speed));
 
             while (opModeIsActive() && (runtime.seconds() < timeoutS) && middleDrive.isBusy()) {
 
+                currentMiddlePower = middleDrive.getPower();
+                currentMiddle2Power = middleDrive2.getPower();
+
+                if(currentMiddlePower < 1.0){
+                    middleDrive.setPower(currentMiddlePower + 0.01);
+                }
+                if(currentMiddle2Power < 1.0){
+                    middleDrive2.setPower(currentMiddle2Power + 0.01);
+                }
+
                 // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d :%7d", newMiddleTarget);
-                telemetry.addData("Path2",  "Running at %7d :%7d", middleDrive.getCurrentPosition());
-                telemetry.addData("Middle2 Path2",  "Running at %7d :%7d", middleDrive2.getCurrentPosition());
+                telemetry.addData("Path1, Running to:", newMiddleTarget);
+                telemetry.addData("MiddleDrivePos", middleDrive.getCurrentPosition());
+                telemetry.addData("MiddleDrive2Pos", middleDrive2.getCurrentPosition());
                 telemetry.update();
             }
 
