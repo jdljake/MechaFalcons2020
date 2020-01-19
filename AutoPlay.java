@@ -69,8 +69,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="EncoderTest", group="Pushbot")
-public class EncoderTest extends LinearOpMode {
+@Autonomous(name="AutoPlay", group="Pushbot")
+public class AutoPlay extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
