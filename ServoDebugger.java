@@ -85,23 +85,23 @@ public class ServoDebugger extends LinearOpMode {
 
 
             if(gamepad2.right_bumper){
-//                servoGrabber.setPosition(0.9); //open
+                servoGrabber.setPosition(1); //open
 //                leftLatchServo.setPosition(0.5);
 //                rightLatchServo.setPosition(0.5);
             }
             if(gamepad2.left_bumper){
-//                servoGrabber.setPosition(0.32); //close
+                servoGrabber.setPosition(0); // closed
 //                leftLatchServo.setPosition(1);
 //                rightLatchServo.setPosition(0);
             }
 
             if(tgg.toggle(gamepad2.dpad_up)){
-                servoGrabber.setPosition(servoGrabber.getPosition() + 0.1);
+//                servoGrabber.setPosition(servoGrabber.getPosition() + 0.1);
 //                leftLatchServo.setPosition(leftLatchServo.getPosition() + 0.1);
 //                rightLatchServo.setPosition(rightLatchServo.getPosition() + 0.1);
             }
             if(tgg.toggle(gamepad2.dpad_down)){
-                servoGrabber.setPosition(servoGrabber.getPosition() - 0.1);
+//                servoGrabber.setPosition(servoGrabber.getPosition() - 0.1);
 //                leftLatchServo.setPosition(leftLatchServo.getPosition() - 0.1);
 //                rightLatchServo.setPosition(rightLatchServo.getPosition() + 0.1);
             }
