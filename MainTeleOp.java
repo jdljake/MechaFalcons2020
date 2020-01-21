@@ -67,6 +67,7 @@ public class MainTeleOp extends LinearOpMode {
     private DcMotor middleDrive2 = null;
     private DcMotorEx leftArmDrive = null;
     private DcMotorEx rightArmDrive = null;
+    private DcMotorEx middleArmDrive = null;
     private Servo servoGrabber= null;
     private Servo leftLatchServo= null;
     private Servo rightLatchServo= null;
@@ -86,6 +87,7 @@ public class MainTeleOp extends LinearOpMode {
         middleDrive2 = hardwareMap.get(DcMotor.class, "middle_drive2");
         leftArmDrive = hardwareMap.get(DcMotorEx.class, "left_arm_drive");
         rightArmDrive = hardwareMap.get(DcMotorEx.class, "right_arm_drive");
+        middleArmDrive = hardwareMap.get(DcMotorEx.class, "middle_arm_drive");
         servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
         leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
         rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
@@ -111,12 +113,15 @@ public class MainTeleOp extends LinearOpMode {
         //reset encoders during init
         leftArmDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightArmDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        middleArmDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         leftArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        middleArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 //        leftArmDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 //        rightArmDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//        middleArmDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -169,7 +174,7 @@ public class MainTeleOp extends LinearOpMode {
 //                armPower = 0.30;
                 armPower = 0.50;
             }
-//            else if(leftArmDrive.getCurrentPosition() >= 0 || rightArmDrive.getCurrentPosition() >= 0){
+//            else if(leftArmDrive.getCurrentPosition() >= 0 || rightArmDrive.getCurrentPosition() >= 0 || rightArmDrive.getCurrentPosition() >= 0){
 //                armPower = -0.1; // stall torque is -0.1, but I set it at 0 temporarily just while testing servos
 //                armPower = 0;
 //            }
@@ -216,9 +221,10 @@ public class MainTeleOp extends LinearOpMode {
     ////////////////////////////////////////////
 
             //locks the motors in place when not moving while opModeIsActive
-//            if (!rightArmDrive.isBusy() && !leftArmDrive.isBusy()){
+//            if (!rightArmDrive.isBusy() && !leftArmDrive.isBusy() && !middleArmDrive.isBusy()){
 //                leftArmDrive.setTargetPosition(leftArmDrive.getCurrentPosition());
 //                rightArmDrive.setTargetPosition(rightArmDrive.getCurrentPosition());
+//                middleArmDrive.setTargetPosition(middleArmDrive.getCurrentPosition()):
 //                rightArmDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 //                leftArmDrive.setVelocity(200);
 //                leftArmDrive.setVelocity(200);
@@ -234,6 +240,7 @@ public class MainTeleOp extends LinearOpMode {
             middleDrive2.setPower(-middlePower);
             leftArmDrive.setPower(armPower);
             rightArmDrive.setPower(armPower);
+            middleArmDrive.setPower(armPower);
             grabberExtenderServo.setPower(grabberExtenderServoPower);
 
             // Show the elapsed game time and wheel power.
@@ -245,6 +252,7 @@ public class MainTeleOp extends LinearOpMode {
             //telemetry.addData("latchCounter:", latchCounter);
             //telemetry.addData("LeftArmPos", leftArmDrive.getCurrentPosition());
             //telemetry.addData("RightArmPos", rightArmDrive.getCurrentPosition());
+            //telemetry.addData("MiddleArmPos", middleArmDrive.getCurrentPosition());
 
 
 //            telemetry.addData("latchDown", latchServoDown);
