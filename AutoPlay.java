@@ -198,7 +198,12 @@ public class AutoPlay extends LinearOpMode {
         rotate(90, 0.7);
         
 
-        encoderMiddleDrive(DRIVE_SPEED,  60,  5.0);
+        encoderMiddleDrive(DRIVE_SPEED,  62,  5.0);
+        //while(!specialStone){
+        //    if(!middleDrive.isBusy() && !middleDrive2.isBusy()){
+        //        encoderMiddleDrive(DRIVE_SPEED,  2,  5.0);
+        //    }
+        //}
         encoderDrive(DRIVE_SPEED,  34,  34, 5.0);
         //servoGrabber.setPosition(0.9);
         encoderDrive(DRIVE_SPEED,  -34,  -34, 5.0);
