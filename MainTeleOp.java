@@ -141,7 +141,7 @@ public class MainTeleOp extends LinearOpMode {
             double servoGrabberPosition = servoGrabber.getPosition();
 
 
-    //////////gamepad 1 ////////////////////////
+            //////////gamepad 1 ////////////////////////
 
             double driveLeft = -gamepad1.left_stick_y;
             double driveRight = -gamepad1.right_stick_y;
@@ -160,10 +160,10 @@ public class MainTeleOp extends LinearOpMode {
 
             middlePower = Range.clip(turn, -1.0, 1.0);
 
-    ////////////////////////////////////////////
+            ////////////////////////////////////////////
 
 
-    //////////gamepad 2 ////////////////////////
+            //////////gamepad 2 ////////////////////////
             if(gamepad2.right_trigger != 0){
 //                armPower = -0.45;
 //                armPower = -0.50;
@@ -185,10 +185,10 @@ public class MainTeleOp extends LinearOpMode {
 
 
             if(gamepad2.right_bumper){
-                servoGrabber.setPosition(0.9); //open
+                servoGrabber.setPosition(1); //open
             }
             if(gamepad2.left_bumper){
-                servoGrabber.setPosition(0.32); //close
+                servoGrabber.setPosition(0); //close
             }
 
 
@@ -218,7 +218,7 @@ public class MainTeleOp extends LinearOpMode {
                 grabberExtenderServoPower = 0;
             }
 
-    ////////////////////////////////////////////
+            ////////////////////////////////////////////
 
             //locks the motors in place when not moving while opModeIsActive
 //            if (!rightArmDrive.isBusy() && !leftArmDrive.isBusy() && !middleArmDrive.isBusy()){
