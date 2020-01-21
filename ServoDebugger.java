@@ -61,6 +61,8 @@ public class ServoDebugger extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Servo servoGrabber= null;
+    private Servo leftLatchServo= null;
+    private Servo rightLatchServo= null;
     private Toggle tgg = new Toggle();
 
 
@@ -70,7 +72,8 @@ public class ServoDebugger extends LinearOpMode {
         telemetry.update();
 
         servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
-
+//        leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
+//        rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -82,22 +85,32 @@ public class ServoDebugger extends LinearOpMode {
 
 
             if(gamepad2.right_bumper){
-                servoGrabber.setPosition(0.9); //open
+//                servoGrabber.setPosition(0.9); //open
+//                leftLatchServo.setPosition(0.5);
+//                rightLatchServo.setPosition(0.5);
             }
             if(gamepad2.left_bumper){
-                servoGrabber.setPosition(0.32); //close
+//                servoGrabber.setPosition(0.32); //close
+//                leftLatchServo.setPosition(1);
+//                rightLatchServo.setPosition(0);
             }
 
             if(tgg.toggle(gamepad2.dpad_up)){
                 servoGrabber.setPosition(servoGrabber.getPosition() + 0.1);
+//                leftLatchServo.setPosition(leftLatchServo.getPosition() + 0.1);
+//                rightLatchServo.setPosition(rightLatchServo.getPosition() + 0.1);
             }
             if(tgg.toggle(gamepad2.dpad_down)){
                 servoGrabber.setPosition(servoGrabber.getPosition() - 0.1);
+//                leftLatchServo.setPosition(leftLatchServo.getPosition() - 0.1);
+//                rightLatchServo.setPosition(rightLatchServo.getPosition() + 0.1);
             }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Servo Position: ", servoGrabber.getPosition());
+//            telemetry.addData("LeftLatchServo Position: ", leftLatchServo.getPosition());
+//            telemetry.addData("RightLatchSevo Position: ", rightLatchServo.getPosition());
+            telemetry.addData("ServoGrabber Position: ", servoGrabber.getPosition());
             telemetry.update();
             tgg.reset();
         }
