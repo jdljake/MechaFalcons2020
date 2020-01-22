@@ -29,12 +29,17 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.SwitchableLight;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -82,6 +87,7 @@ public class AutoPlay extends LinearOpMode {
     private Servo leftLatchServo = null;
     private Servo rightLatchServo = null;
     //private Servo servoGrabber= null;
+    private NormalizedColorSensor colorSensor = null;
 
     //imu stuff
     BNO055IMU               imu;
@@ -110,10 +116,12 @@ public class AutoPlay extends LinearOpMode {
         middleDrive2 = hardwareMap.get(DcMotorEx.class, "middle_drive2");
         leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
         rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
+        colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         //servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
 
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        middleDrive2.setDirection(DcMotor.Direction.REVERSE);
 
         leftDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -176,6 +184,12 @@ public class AutoPlay extends LinearOpMode {
         telemetry.update();
         ////////////////////////////
 
+        // If possible, turn the light on in the beginning (it might already be on anyway,
+        // we just make sure it is if we can).
+        if (colorSensor instanceof SwitchableLight) {
+            ((SwitchableLight)colorSensor).enableLight(true);
+        }
+
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -188,32 +202,33 @@ public class AutoPlay extends LinearOpMode {
 
 
         //Moving Base to construction zone
-        encoderDrive(DRIVE_SPEED,  30,  30, 5.0);
-        rotate(-90, 0.7);
-        leftLatchServo.setPosition(1);
-        rightLatchServo.setPosition(0);
-        encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
-        leftLatchServo.setPosition(0.5);
-        rightLatchServo.setPosition(0.5);
-        rotate(90, 0.7);
-        
+//        encoderDrive(DRIVE_SPEED,  30,  30, 5.0);
+//        rotate(-90, 0.7);
+//        leftLatchServo.setPosition(1);
+//        rightLatchServo.setPosition(0);
+//        encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
+//        leftLatchServo.setPosition(0.5);
+//        rightLatchServo.setPosition(0.5);
+//        rotate(90, 0.7);
 
-        encoderMiddleDrive(DRIVE_SPEED,  62,  5.0);
-        //while(!specialStone){
-        //    if(!middleDrive.isBusy() && !middleDrive2.isBusy()){
-        //        encoderMiddleDrive(DRIVE_SPEED,  2,  5.0);
-        //    }
-        //}
-        encoderDrive(DRIVE_SPEED,  34,  34, 5.0);
+
+        encoderDrive(DRIVE_SPEED, 16, 16, 5.0);
+        checkForSkystone(); //runs until skystone seen, so assume that skystone is found in next step
+        encoderMiddleDrive(0.4, -8, 5.0);
+        encoderDrive(DRIVE_SPEED, 3, 3, 5.0);
+
+//        encoderMiddleDrive(DRIVE_SPEED,  62,  5.0);
+
+//        encoderDrive(DRIVE_SPEED,  34,  34, 5.0);
         //servoGrabber.setPosition(0.9);
-        encoderDrive(DRIVE_SPEED,  -34,  -34, 5.0);
-        rotate(90, 0.7);
-        encoderDrive(DRIVE_SPEED,  60,60  , 5.0);
+//        encoderDrive(DRIVE_SPEED,  -34,  -34, 5.0);
+//        rotate(90, 0.7);
+//        encoderDrive(DRIVE_SPEED,  60,60  , 5.0);
         //servoGrabber.setPosition(0.32);
-        rotate(-90, 0.7);
+//        rotate(-90, 0.7);
 
         //Dock
-        encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
+//        encoderMiddleDrive(DRIVE_SPEED,  -22,  5.0);
 
 
 
@@ -529,5 +544,56 @@ public class AutoPlay extends LinearOpMode {
     }
 
     ///end gyro stuff
+
+
+
+    ///start color stuff
+
+    protected void checkForSkystone(){
+
+        // values is a reference to the hsvValues array.
+        float[] hsvValues = new float[3];
+        final float values[] = hsvValues;
+
+        boolean skystoneseen = false;
+
+        // Loop until we are asked to stop
+        while (opModeIsActive() && !skystoneseen) {
+            // Read the sensor
+            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+
+            float max = Math.max(Math.max(Math.max(colors.red, colors.green), colors.blue), colors.alpha);
+            colors.red   /= max;
+            colors.green /= max;
+            colors.blue  /= max;
+            int color = colors.toColor();
+
+            // convert the RGB values to HSV values.
+            Color.RGBToHSV(Color.red(color), Color.green(color), Color.blue(color), hsvValues);
+
+            float colorCondition;
+            float r = Color.red(color);
+            float g = Color.green(color);
+            float b = Color.blue(color);
+            colorCondition = (r * g) / (b * b);
+
+            if(colorCondition < 2){
+                skystoneseen = true;
+                middleDrive.setPower(0);
+                middleDrive2.setPower(0);
+            } else {
+                skystoneseen = false;
+                middleDrive.setPower(-0.3);
+                middleDrive2.setPower(0.3);
+            }
+
+//            telemetry.addData("Color Condition", colorCondition);
+            telemetry.addData("Skystone:", skystoneseen);
+            telemetry.update();
+
+        }
+    }
+
+    ///end color stuff
 
 }
