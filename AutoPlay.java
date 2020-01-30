@@ -95,7 +95,7 @@ public class AutoPlay extends LinearOpMode {
     double                  globalAngle, power = .30, correction;
     //
 
-    //    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
+    //    static final double     COUNTS_PER_MOTOR    = 1440 ;    // eg: TETRIX Motor Encoder
     static final double     COUNTS_PER_MOTOR_REV    = 560 ;    // should be REV 20:1 HD HEX motor
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 3.0 ;     // For figuring circumference
@@ -212,7 +212,7 @@ public class AutoPlay extends LinearOpMode {
 //        rotate(90, 0.7);
 
 
-        encoderDrive(DRIVE_SPEED, 16, 16, 5.0);
+        encoderDrive(DRIVE_SPEED, 20, 20, 5.0);
         checkForSkystone(); //runs until skystone seen, so assume that skystone is found in next step
         encoderMiddleDrive(0.4, -8, 5.0);
         encoderDrive(DRIVE_SPEED, 3, 3, 5.0);
@@ -583,8 +583,12 @@ public class AutoPlay extends LinearOpMode {
                 middleDrive2.setPower(0);
             } else {
                 skystoneseen = false;
-                middleDrive.setPower(-0.3);
-                middleDrive2.setPower(0.3);
+                if(middleDrive.getPower() < 1.0){
+                    middleDrive.setPower(middleDrive.getPower() + 0.01);
+                }
+                if(middleDrive2.getPower() < 1.0){
+                    middleDrive2.setPower(middleDrive2.getPower() + 0.01);
+                }
             }
 
 //            telemetry.addData("Color Condition", colorCondition);
