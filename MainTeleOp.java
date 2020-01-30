@@ -64,7 +64,7 @@ public class MainTeleOp extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotor middleDrive = null;
-    private DcMotor middleDrive2 = null;
+//    private DcMotor middleDrive2 = null;
     private DcMotorEx leftArmDrive = null;
     private DcMotorEx rightArmDrive = null;
     private DcMotorEx middleArmDrive = null;
@@ -84,7 +84,7 @@ public class MainTeleOp extends LinearOpMode {
         leftDrive  = hardwareMap.get(DcMotorEx.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotorEx.class, "right_drive");
         middleDrive = hardwareMap.get(DcMotor.class, "middle_drive");
-        middleDrive2 = hardwareMap.get(DcMotor.class, "middle_drive2");
+//        middleDrive2 = hardwareMap.get(DcMotor.class, "middle_drive2");
         leftArmDrive = hardwareMap.get(DcMotorEx.class, "left_arm_drive");
         rightArmDrive = hardwareMap.get(DcMotorEx.class, "right_arm_drive");
         middleArmDrive = hardwareMap.get(DcMotorEx.class, "middle_arm_drive");
@@ -97,6 +97,7 @@ public class MainTeleOp extends LinearOpMode {
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
+//        middleDrive2.setDirection(DcMotor.Direction.REVERSE);
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,12 +151,11 @@ public class MainTeleOp extends LinearOpMode {
             leftPower    = Range.clip(driveLeft,-1.0, 1.0);
             rightPower   = Range.clip(driveRight, -1.0, 1.0);
 
-
             if(gamepad1.left_trigger != 0){
-                turn  =  gamepad1.left_trigger;
+                turn  =  -gamepad1.left_trigger;
             }
             if(gamepad1.right_trigger != 0){
-                turn  =  -gamepad1.right_trigger;
+                turn  =  gamepad1.right_trigger;
             }
 
             middlePower = Range.clip(turn, -1.0, 1.0);
@@ -165,11 +165,14 @@ public class MainTeleOp extends LinearOpMode {
 
             //////////gamepad 2 ////////////////////////
             if(gamepad2.right_trigger != 0){
-//                armPower = -0.45;
-//                armPower = -0.50;
-//                armPower = -0.55;
-//                armPower = -0.6;
-                armPower = -0.9;
+                if(gamepad2.a){
+                    armPower = middleArmDrive.getPower();
+                    if (armPower > -1.0){
+                        armPower += -0.1;
+                    }
+                } else {
+                    armPower = -0.50;
+                }
             } else if(gamepad2.left_trigger != 0){
 //                armPower = 0.30;
                 armPower = 0.50;
@@ -182,7 +185,6 @@ public class MainTeleOp extends LinearOpMode {
                 armPower = 0.0;
 //                armPower = -0.1;
             }
-
 
             if(gamepad2.right_bumper){
                 servoGrabber.setPosition(1); //open
@@ -237,7 +239,7 @@ public class MainTeleOp extends LinearOpMode {
             leftDrive.setPower(leftPower);
             rightDrive.setPower(rightPower);
             middleDrive.setPower(middlePower);
-            middleDrive2.setPower(-middlePower);
+//            middleDrive2.setPower(middlePower);
             leftArmDrive.setPower(armPower);
             rightArmDrive.setPower(armPower);
             middleArmDrive.setPower(armPower);
@@ -250,9 +252,9 @@ public class MainTeleOp extends LinearOpMode {
             telemetry.addData("rightDrive position", rightDrive.getCurrentPosition());
             //telemetry.addData("grabberExtenderServo power:", grabberExtenderServo.getPower());
             //telemetry.addData("latchCounter:", latchCounter);
-            //telemetry.addData("LeftArmPos", leftArmDrive.getCurrentPosition());
-            //telemetry.addData("RightArmPos", rightArmDrive.getCurrentPosition());
-            //telemetry.addData("MiddleArmPos", middleArmDrive.getCurrentPosition());
+            telemetry.addData("LeftArmPos", leftArmDrive.getCurrentPosition());
+            telemetry.addData("RightArmPos", rightArmDrive.getCurrentPosition());
+            telemetry.addData("MiddleArmPos", middleArmDrive.getCurrentPosition());
 
 
 //            telemetry.addData("latchDown", latchServoDown);
