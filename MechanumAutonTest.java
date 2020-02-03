@@ -48,6 +48,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
+import java.sql.Driver;
+
 
 @Autonomous(name="MechanumAutonTest", group="Pushbot")
 public class MechanumAutonTest extends LinearOpMode {
@@ -78,6 +80,7 @@ public class MechanumAutonTest extends LinearOpMode {
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
     //static final double     COUNTS_PER_DEGREE       = 18.8888888889;
     static final double     COUNTS_PER_DEGREE       = 18.8888888889;
+//    static final double     DRIVE_SPEED             = 0.7;
     static final double     DRIVE_SPEED             = 0.7;
     static final double     TURN_SPEED              = 0.5;
 
@@ -179,9 +182,6 @@ public class MechanumAutonTest extends LinearOpMode {
 // Note: Reverse movement is obtained by setting a negative distance (not speed)
 ////////////////////////////////////////////////////////////////////////////////////
 
-        double servoLeftPosition = leftLatchServo.getPosition();
-        double servoRightPosition = rightLatchServo.getPosition();
-
         //servoGrabber.setPosition(1);
         //encoderStrafeDrive(DRIVE_SPEED, -21.3564, 5.0);
         //servoGrabber.setPosition(0);
@@ -189,13 +189,34 @@ public class MechanumAutonTest extends LinearOpMode {
         //encoderDrive(DRIVE_SPEED, 10, 5.0);
         //servoGrabber.setPosition(1);
         //encoderDrive(DRIVE_SPEED, -20, 5.0);
-        dropLatches();
-        //raiseLatches(servoLeftPosition, servoRightPosition);
 
+//        encoderDrive(DRIVE_SPEED, -10, 5.0);
+//        dropLatches();
+//        encoderDrive(DRIVE_SPEED, -10, 5.0);
+//        raiseLatches();
+
+
+        servoGrabber.setPosition(1);
+        sleep(1000);
+
+        checkForSkystone();
+        telemetry.addData("checkForSkystone: ", "Complete");
+        telemetry.update();
+        sleep(2000);
+
+        encoderDrive(DRIVE_SPEED, -5, 5.0);
+        encoderStrafeDrive(DRIVE_SPEED, -11, 5.0);
+        encoderStrafeDrive(DRIVE_SPEED, 11, 5.0);
+        encoderDrive(DRIVE_SPEED, 5, 5.0);
+
+
+//        encoderStrafeDrive(0.7, -11, 5.0);
+
+
+        servoGrabber.setPosition(0);
+        sleep(2000);
 
         //rotate(-80, 0.5);
-        //leftLatchServo.setPosition(servoLeftPosition);
-        //rightLatchServo.setPosition(servoRightPosition);
 
 
 
@@ -231,12 +252,12 @@ public class MechanumAutonTest extends LinearOpMode {
         double currentBackLeftPower;
         double currentBackRightPower;
 
-        inches = 1.1 * inches;
+        inches = 1.11111 * inches;
 
         if (opModeIsActive()) {
             newFrontLeftTarget = frontLeftDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
-            newFrontRightTarget = frontRightDrive.getCurrentPosition() + (int) (-1 * inches * COUNTS_PER_INCH);
-            newBackLeftTarget = backLeftDrive.getCurrentPosition() + (int) (-1 * inches * COUNTS_PER_INCH);
+            newFrontRightTarget = frontRightDrive.getCurrentPosition() - (int) (inches * COUNTS_PER_INCH);
+            newBackLeftTarget = backLeftDrive.getCurrentPosition() - (int) (inches * COUNTS_PER_INCH);
             newBackRightTarget = backRightDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
 
             frontLeftDrive.setTargetPosition(newFrontLeftTarget);
@@ -273,6 +294,7 @@ public class MechanumAutonTest extends LinearOpMode {
                 }
 
                 // Display it for the driver.
+                telemetry.addData("Strafe Time: ", "its strafe time");
                 telemetry.addData("FLTarget", newFrontLeftTarget);
                 telemetry.addData("FRTarget", newFrontRightTarget);
                 telemetry.addData("BLTarget", newBackLeftTarget);
@@ -407,12 +429,12 @@ public class MechanumAutonTest extends LinearOpMode {
     private void dropLatches(){
         leftLatchServo.setPosition(1);
         rightLatchServo.setPosition(0);
-        sleep(500);
+        sleep(2000);
     }
-    private void raiseLatches(double left, double right){
-        rightLatchServo.setPosition(left);
-        leftLatchServo.setPosition(right);
-        sleep(500 );
+    private void raiseLatches(){
+        rightLatchServo.setPosition(0.5);
+        leftLatchServo.setPosition(0.5);
+        sleep(2000);
     }
     private void resetAngle()
     {
@@ -591,8 +613,51 @@ public class MechanumAutonTest extends LinearOpMode {
             telemetry.update();
 
         }
-    }
 
+        while(opModeIsActive() && skystoneseen){
+            // Read the sensor
+            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+
+            float max = Math.max(Math.max(Math.max(colors.red, colors.green), colors.blue), colors.alpha);
+            colors.red   /= max;
+            colors.green /= max;
+            colors.blue  /= max;
+            int color = colors.toColor();
+
+            // convert the RGB values to HSV values.
+            Color.RGBToHSV(Color.red(color), Color.green(color), Color.blue(color), hsvValues);
+
+            float colorCondition;
+            float r = Color.red(color);
+            float g = Color.green(color);
+            float b = Color.blue(color);
+            colorCondition = (r * g) / (b * b);
+
+            if(colorCondition < 2){
+                skystoneseen = true;
+                frontLeftDrive.setPower(0.5);
+                frontRightDrive.setPower(-0.5);
+                backLeftDrive.setPower(-0.5);
+                backRightDrive.setPower(0.5);
+            } else {
+                skystoneseen = false;
+                frontLeftDrive.setPower(0);
+                frontRightDrive.setPower(0);
+                backLeftDrive.setPower(0);
+                backRightDrive.setPower(0);
+            }
+
+//            telemetry.addData("Color Condition", colorCondition);
+            telemetry.addData("Skystone:", skystoneseen);
+            telemetry.update();
+        }
+
+        // Turn off RUN_TO_POSITION
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
     ///end color stuff
 
 }
