@@ -58,6 +58,10 @@ public class MechanumAutonTest extends LinearOpMode {
     private DcMotorEx frontRightDrive = null;
     private DcMotorEx backLeftDrive = null;
     private DcMotorEx backRightDrive = null;
+    private Servo servoGrabber= null;
+    private Servo leftLatchServo= null;
+    private Servo rightLatchServo= null;
+
 
     private NormalizedColorSensor colorSensor = null;
 
@@ -72,6 +76,7 @@ public class MechanumAutonTest extends LinearOpMode {
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 3.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
+    //static final double     COUNTS_PER_DEGREE       = 18.8888888889;
     static final double     COUNTS_PER_DEGREE       = 18.8888888889;
     static final double     DRIVE_SPEED             = 0.7;
     static final double     TURN_SPEED              = 0.5;
@@ -87,6 +92,9 @@ public class MechanumAutonTest extends LinearOpMode {
         backLeftDrive  = hardwareMap.get(DcMotorEx.class, "left_back_drive");
         backRightDrive = hardwareMap.get(DcMotorEx.class, "right_back_drive");
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
+        servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
+        leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
+        rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
         //servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
 
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -171,11 +179,26 @@ public class MechanumAutonTest extends LinearOpMode {
 // Note: Reverse movement is obtained by setting a negative distance (not speed)
 ////////////////////////////////////////////////////////////////////////////////////
 
+        double servoLeftPosition = leftLatchServo.getPosition();
+        double servoRightPosition = rightLatchServo.getPosition();
 
-        encoderDrive(DRIVE_SPEED, 20, 4.0);
-        encoderDrive(DRIVE_SPEED, -20, 4.0);
-        encoderStrafeDrive(DRIVE_SPEED, 20, 5.0);
-        encoderStrafeDrive(DRIVE_SPEED, -20, 5.0);
+        //servoGrabber.setPosition(1);
+        //encoderStrafeDrive(DRIVE_SPEED, -21.3564, 5.0);
+        //servoGrabber.setPosition(0);
+        //encoderDrive(DRIVE_SPEED, -32.6772, 5.0);
+        //encoderDrive(DRIVE_SPEED, 10, 5.0);
+        //servoGrabber.setPosition(1);
+        //encoderDrive(DRIVE_SPEED, -20, 5.0);
+        dropLatches();
+        //raiseLatches(servoLeftPosition, servoRightPosition);
+
+
+        //rotate(-80, 0.5);
+        //leftLatchServo.setPosition(servoLeftPosition);
+        //rightLatchServo.setPosition(servoRightPosition);
+
+
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -196,6 +219,7 @@ public class MechanumAutonTest extends LinearOpMode {
      */
 
     ///encoder drive stuff
+
     public void encoderStrafeDrive(double maxspeed, double inches, double timeoutS){
         int newFrontLeftTarget;
         int newFrontRightTarget;
@@ -207,15 +231,17 @@ public class MechanumAutonTest extends LinearOpMode {
         double currentBackLeftPower;
         double currentBackRightPower;
 
+        inches = 1.1 * inches;
+
         if (opModeIsActive()) {
             newFrontLeftTarget = frontLeftDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
-            newFrontRightTarget = frontRightDrive.getCurrentPosition() + (int) (-inches * COUNTS_PER_INCH);
-            newBackLeftTarget = backLeftDrive.getCurrentPosition() + (int) (-inches * COUNTS_PER_INCH);
+            newFrontRightTarget = frontRightDrive.getCurrentPosition() + (int) (-1 * inches * COUNTS_PER_INCH);
+            newBackLeftTarget = backLeftDrive.getCurrentPosition() + (int) (-1 * inches * COUNTS_PER_INCH);
             newBackRightTarget = backRightDrive.getCurrentPosition() + (int) (inches * COUNTS_PER_INCH);
 
             frontLeftDrive.setTargetPosition(newFrontLeftTarget);
-            frontRightDrive.setTargetPosition(-newFrontRightTarget);
-            backLeftDrive.setTargetPosition(-newBackLeftTarget);
+            frontRightDrive.setTargetPosition(newFrontRightTarget);
+            backLeftDrive.setTargetPosition(newBackLeftTarget);
             backRightDrive.setTargetPosition(newBackRightTarget);
 
             // Turn On RUN_TO_POSITION
@@ -378,6 +404,16 @@ public class MechanumAutonTest extends LinearOpMode {
     /**
      * Resets the cumulative angle tracking to zero.
      */
+    private void dropLatches(){
+        leftLatchServo.setPosition(1);
+        rightLatchServo.setPosition(0);
+        sleep(500);
+    }
+    private void raiseLatches(double left, double right){
+        rightLatchServo.setPosition(left);
+        leftLatchServo.setPosition(right);
+        sleep(500 );
+    }
     private void resetAngle()
     {
         lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
