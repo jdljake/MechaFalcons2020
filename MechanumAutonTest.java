@@ -61,8 +61,8 @@ public class MechanumAutonTest extends LinearOpMode {
     private DcMotorEx backLeftDrive = null;
     private DcMotorEx backRightDrive = null;
     private Servo servoGrabber= null;
-    private Servo leftLatchServo= null;
-    private Servo rightLatchServo= null;
+    //private Servo leftLatchServo= null;
+    //private Servo rightLatchServo= null;
 
 
     private NormalizedColorSensor colorSensor = null;
@@ -80,7 +80,7 @@ public class MechanumAutonTest extends LinearOpMode {
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
     //static final double     COUNTS_PER_DEGREE       = 18.8888888889;
     static final double     COUNTS_PER_DEGREE       = 18.8888888889;
-//    static final double     DRIVE_SPEED             = 0.7;
+    //    static final double     DRIVE_SPEED             = 0.7;
     static final double     DRIVE_SPEED             = 0.7;
     static final double     TURN_SPEED              = 0.5;
 
@@ -96,8 +96,8 @@ public class MechanumAutonTest extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotorEx.class, "right_back_drive");
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
-        leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
-        rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
+        //leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
+        //rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
         //servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
 
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -196,25 +196,28 @@ public class MechanumAutonTest extends LinearOpMode {
 //        raiseLatches();
 
 
-        servoGrabber.setPosition(1);
+        servoGrabber.setPosition(0.9);
         sleep(1000);
 
         checkForSkystone();
         telemetry.addData("checkForSkystone: ", "Complete");
         telemetry.update();
-        sleep(2000);
 
-        encoderDrive(DRIVE_SPEED, -5, 5.0);
-        encoderStrafeDrive(DRIVE_SPEED, -11, 5.0);
-        encoderStrafeDrive(DRIVE_SPEED, 11, 5.0);
-        encoderDrive(DRIVE_SPEED, 5, 5.0);
+        encoderDrive(DRIVE_SPEED, 14, 8.0);
+        servoGrabber.setPosition(0.2);
+        sleep(2000);
+        encoderDrive(DRIVE_SPEED, -14, 8.0);
+
+        //encoderStrafeDrive(DRIVE_SPEED, -11, 5.0);
+        //encoderStrafeDrive(DRIVE_SPEED, 11, 5.0);
+        //encoderDrive(DRIVE_SPEED, 5, 5.0);
 
 
 //        encoderStrafeDrive(0.7, -11, 5.0);
 
 
-        servoGrabber.setPosition(0);
-        sleep(2000);
+       // servoGrabber.setPosition(0);
+        //sleep(2000);
 
         //rotate(-80, 0.5);
 
@@ -426,7 +429,7 @@ public class MechanumAutonTest extends LinearOpMode {
     /**
      * Resets the cumulative angle tracking to zero.
      */
-    private void dropLatches(){
+    /*private void dropLatches(){
         leftLatchServo.setPosition(1);
         rightLatchServo.setPosition(0);
         sleep(2000);
@@ -435,7 +438,7 @@ public class MechanumAutonTest extends LinearOpMode {
         rightLatchServo.setPosition(0.5);
         leftLatchServo.setPosition(0.5);
         sleep(2000);
-    }
+    }*/
     private void resetAngle()
     {
         lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -600,6 +603,8 @@ public class MechanumAutonTest extends LinearOpMode {
                 frontRightDrive.setPower(0);
                 backLeftDrive.setPower(0);
                 backRightDrive.setPower(0);
+                encoderStrafeDrive(0.4, 6, 7.0);
+                break;
             } else {
                 skystoneseen = false;
                 frontLeftDrive.setPower(0.5);
@@ -645,6 +650,8 @@ public class MechanumAutonTest extends LinearOpMode {
                 frontRightDrive.setPower(0);
                 backLeftDrive.setPower(0);
                 backRightDrive.setPower(0);
+                encoderStrafeDrive(0.4, 6.4, 7.0);
+                break;
             }
 
 //            telemetry.addData("Color Condition", colorCondition);
@@ -661,3 +668,4 @@ public class MechanumAutonTest extends LinearOpMode {
     ///end color stuff
 
 }
+
