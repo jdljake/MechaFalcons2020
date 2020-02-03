@@ -23,6 +23,8 @@ public class MechanumTeleOpTest extends LinearOpMode {
     private DcMotorEx leftArmDrive = null;
     private DcMotorEx rightArmDrive = null;
     private DcMotorEx middleArmDrive = null;
+    private Servo leftLatchServo= null;
+    private Servo rightLatchServo= null;
     private Servo servoGrabber= null;
     private Servo grabberExtenderServo = null;
 
@@ -40,16 +42,10 @@ public class MechanumTeleOpTest extends LinearOpMode {
         rightArmDrive = hardwareMap.get(DcMotorEx.class, "right_arm_drive");
         middleArmDrive = hardwareMap.get(DcMotorEx.class, "middle_arm_drive");
         servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
-       // grabberExtenderServo = hardwareMap.get(Servo.class, "grabber_extender");
+        servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
+        leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
+        rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
         grabberExtenderServo = hardwareMap.get(Servo.class, "grabber_extender");
-//      //mechanum wheels should be configured as below to match this code:
-//
-//                                      /  \
-//
-//                                      \  /
-//
-//      ////////////////////////////////////////////////////////////////////////
-
 
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -86,6 +82,10 @@ public class MechanumTeleOpTest extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        int latchCounter = 2;
+        leftLatchServo.setPosition(0.5);
+        rightLatchServo.setPosition(0.5);
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
@@ -95,18 +95,22 @@ public class MechanumTeleOpTest extends LinearOpMode {
             double driveRight = -gamepad1.right_stick_y;
             double turn = gamepad1.right_stick_x;
             double strafe = (gamepad1.left_trigger > gamepad1.right_trigger)? -gamepad1.left_trigger: gamepad1.right_trigger;
-        // region Petr: I made this and thought that sex jokes were appropriate
+            // region Petr: I made this and thought that sex jokes were appropriate
 //            double pullOut = Range.clip(gamepad2.left_bumper, 0.5, 0.3); // idk why the min works like that but it does
 //            double shoveIn = Range.clip(gamepad2.right_trigger, 0.5, 0.7);
 
-        //endregion
+            //endregion
             double servoGrabberPosition = servoGrabber.getPosition();
             double grabberExtenderServoPower;
             double frontLeftPower;
             double backLeftPower;
             double frontRightPower;
             double backRightPower;
-            double pullOutBringBack = 0.5;
+            double armPower;
+
+
+            //////////gamepad 1 //////////////////////////////////////////
+
             if(gamepad1.right_bumper){
                 frontLeftPower    = Range.clip(driveLeft + strafe,-1.0, 1.0);
                 frontRightPower   = Range.clip(driveRight - strafe, -1.0, 1.0);
@@ -124,10 +128,48 @@ public class MechanumTeleOpTest extends LinearOpMode {
                 backLeftPower    = Range.clip(driveLeft - strafe,-0.5, 0.5);
                 backRightPower   = Range.clip(driveRight + strafe, -0.5, 0.5);
             }
-            double armPower;
-            ////////////////////////////////////////////
 
-            // Finite movement code.
+            //////////////////////////////////////////////////////////////
+
+
+            //////////gamepad 2 //////////////////////////////////////////
+
+            if(gamepad2.right_trigger != 0){
+                if(gamepad2.a){
+                    if(leftArmDrive.getCurrentPosition() > -380 || middleArmDrive.getCurrentPosition() > -380 || rightArmDrive.getCurrentPosition() > -380) {
+                        armPower = middleArmDrive.getPower();
+                        if (armPower > -1.0) {
+                            armPower += -0.1;
+                        }
+                    } else {
+                        armPower = -0.50;
+                    }
+                } else {
+                    armPower = -0.50;
+                }
+            } else if(gamepad2.left_trigger != 0){
+//                armPower = 0.30;
+                armPower = 0.50;
+            }
+            else if((leftArmDrive.getCurrentPosition() >= -330 && leftArmDrive.getCurrentPosition() <= -10) || (rightArmDrive.getCurrentPosition() >= -330 && rightArmDrive.getCurrentPosition() <= -10) ||
+                    (middleArmDrive.getCurrentPosition() >= -330 && middleArmDrive.getCurrentPosition() <= -10)){
+                armPower = -0.01; // stall torque is -0.01
+            }
+            else {
+                armPower = 0.0;
+            }
+
+
+            //grabber extender
+            if(gamepad2.right_bumper){
+                grabberExtenderServoPower = 0.7;
+            }else if(gamepad2.left_bumper){
+                grabberExtenderServoPower = 0.3;
+            }else{
+                grabberExtenderServoPower = 0.5;
+            }
+
+            // Finite movement
             if(gamepad2.dpad_down){
                 frontLeftPower -= 0.15;
                 frontRightPower -= 0.15;
@@ -152,6 +194,22 @@ public class MechanumTeleOpTest extends LinearOpMode {
                 backLeftPower -= 0.2;
                 backRightPower+= 0.2;
             }
+
+
+            //latches
+            if(tgg.toggle(gamepad1.b)){
+                if(latchCounter % 2 == 0){
+                    leftLatchServo.setPosition(1);
+                    rightLatchServo.setPosition(0);
+                    latchCounter += 1;
+                } else {
+                    leftLatchServo.setPosition(0.5);
+                    rightLatchServo.setPosition(0.5);
+                    latchCounter += 1;
+                }
+            }
+
+            //grabber
             if(tgg.toggle(gamepad2.x)){
                 if(servoGrabberPosition == 1){
                     servoGrabber.setPosition(0);
@@ -159,68 +217,9 @@ public class MechanumTeleOpTest extends LinearOpMode {
                     servoGrabber.setPosition(1);
                 }
             }
-            // Servo Extender Code
-//            if(gamepad2.left_trigger){
-//
-//            }
 
-            //////////gamepad 2 ////////////////////////
-//            if(gamepad2.right_trigger != 0){
-//                if(gamepad2.a){
-//                    armPower = middleArmDrive.getPower();
-//                    if (armPower > -1.0){
-//                        armPower += -0.1;
-//                    }
-//                } else {
-//                    armPower = -0.50;
-//                }
-//            } else if(gamepad2.left_trigger != 0){
-////                armPower = 0.30;
-//                armPower = 0.50;
-//            }
-////            else if(leftArmDrive.getCurrentPosition() >= 0 || rightArmDrive.getCurrentPosition() >= 0 || rightArmDrive.getCurrentPosition() >= 0){
-////                armPower = -0.1; // stall torque is -0.1, but I set it at 0 temporarily just while testing servos
-////                armPower = 0;
-////            }
-//            else {
-//                armPower = 0.0;
-////                armPower = -0.1;
-//            }
+            //////////////////////////////////////////////////////////////
 
-            if(gamepad2.right_trigger != 0){
-                if(gamepad2.a){
-                    if(leftArmDrive.getCurrentPosition() > -380 || middleArmDrive.getCurrentPosition() > -380 || rightArmDrive.getCurrentPosition() > -380) {
-                        armPower = middleArmDrive.getPower();
-                        if (armPower > -1.0) {
-                            armPower += -0.1;
-                        }
-                    } else {
-                        armPower = -0.50;
-                    }
-                } else {
-                    armPower = -0.50;
-                }
-            } else if(gamepad2.left_trigger != 0){
-//                armPower = 0.30;
-                armPower = 0.50;
-            }
-            else if((leftArmDrive.getCurrentPosition() >= -330 && leftArmDrive.getCurrentPosition() <= -10) || (rightArmDrive.getCurrentPosition() >= -330 && rightArmDrive.getCurrentPosition() <= -10) ||
-                    (middleArmDrive.getCurrentPosition() >= -330 && middleArmDrive.getCurrentPosition() <= -10)){
-                armPower = -0.01; // stall torque is -0.1, but I set it at 0 temporarily just while testing servos
-            }
-            else {
-                armPower = 0.0;
-            }
-            //ServoGrabber code
-            if(gamepad2.right_bumper){
-                //servoGrabber.setPosition(1); //open
-                pullOutBringBack = 0.7;
-            }else if(gamepad2.left_bumper){
-                //servoGrabber.setPosition(0); //close
-                pullOutBringBack = 0.3;
-            }else{
-                pullOutBringBack = 0.5;
-            }
 
             // Send calculated power to motors
             frontLeftDrive.setPower(frontLeftPower);
@@ -230,7 +229,7 @@ public class MechanumTeleOpTest extends LinearOpMode {
             leftArmDrive.setPower(armPower);
             rightArmDrive.setPower(armPower);
             middleArmDrive.setPower(armPower);
-            grabberExtenderServo.setPosition(pullOutBringBack);
+            grabberExtenderServo.setPosition(grabberExtenderServoPower);
 
 
             // Show the elapsed game time and wheel power.
