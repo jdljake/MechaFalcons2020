@@ -51,8 +51,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import java.sql.Driver;
 
 
-@Autonomous(name="MechanumAutonTest", group="Pushbot")
-public class MechanumAutonTest extends LinearOpMode {
+@Autonomous(name="MechanumAutonBlue", group="Pushbot")
+public class MechanumAutonBlue extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -60,12 +60,18 @@ public class MechanumAutonTest extends LinearOpMode {
     private DcMotorEx frontRightDrive = null;
     private DcMotorEx backLeftDrive = null;
     private DcMotorEx backRightDrive = null;
+
+    private DcMotorEx leftArmDrive = null;
+    private DcMotorEx middleArmDrive = null;
+    private DcMotorEx rightArmDrive = null;
+
     private Servo servoGrabber= null;
     //private Servo leftLatchServo= null;
     //private Servo rightLatchServo= null;
 
 
     private NormalizedColorSensor colorSensor = null;
+    private NormalizedColorSensor tapeColorSensor = null;
 
     //imu stuff
     BNO055IMU               imu;
@@ -94,7 +100,11 @@ public class MechanumAutonTest extends LinearOpMode {
         frontRightDrive = hardwareMap.get(DcMotorEx.class, "right_drive");
         backLeftDrive  = hardwareMap.get(DcMotorEx.class, "left_back_drive");
         backRightDrive = hardwareMap.get(DcMotorEx.class, "right_back_drive");
+        leftArmDrive = hardwareMap.get(DcMotorEx.class, "left_arm_drive");
+        rightArmDrive = hardwareMap.get(DcMotorEx.class, "right_arm_drive");
+        middleArmDrive = hardwareMap.get(DcMotorEx.class, "middle_arm_drive");
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
+        tapeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "tape_sensor_color");
         servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
         //leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
         //rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
@@ -125,10 +135,18 @@ public class MechanumAutonTest extends LinearOpMode {
         backLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        leftArmDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightArmDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        middleArmDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        leftArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        middleArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d", frontLeftDrive.getCurrentPosition(), frontRightDrive.getCurrentPosition());
@@ -182,45 +200,20 @@ public class MechanumAutonTest extends LinearOpMode {
 // Note: Reverse movement is obtained by setting a negative distance (not speed)
 ////////////////////////////////////////////////////////////////////////////////////
 
-        //servoGrabber.setPosition(1);
-        //encoderStrafeDrive(DRIVE_SPEED, -21.3564, 5.0);
-        //servoGrabber.setPosition(0);
-        //encoderDrive(DRIVE_SPEED, -32.6772, 5.0);
-        //encoderDrive(DRIVE_SPEED, 10, 5.0);
-        //servoGrabber.setPosition(1);
-        //encoderDrive(DRIVE_SPEED, -20, 5.0);
+//        servoGrabber.setPosition(1);
+//        sleep(1000);
+//
+//        checkForSkystone();
+//
+//        encoderDrive(DRIVE_SPEED, 14, 8.0);
+//        servoGrabber.setPosition(0);
+//        sleep(2000);
+//        encoderDrive(DRIVE_SPEED, -18, 8.0);
+//        encoderStrafeDrive(DRIVE_SPEED, 20, 5.0);
 
-//        encoderDrive(DRIVE_SPEED, -10, 5.0);
-//        dropLatches();
-//        encoderDrive(DRIVE_SPEED, -10, 5.0);
-//        raiseLatches();
-
-
-        servoGrabber.setPosition(0.9);
-        sleep(1000);
-
-        checkForSkystone();
-        telemetry.addData("checkForSkystone: ", "Complete");
-        telemetry.update();
-
-        encoderDrive(DRIVE_SPEED, 14, 8.0);
-        servoGrabber.setPosition(0.2);
-        sleep(2000);
-        encoderDrive(DRIVE_SPEED, -14, 8.0);
-
-        //encoderStrafeDrive(DRIVE_SPEED, -11, 5.0);
-        //encoderStrafeDrive(DRIVE_SPEED, 11, 5.0);
-        //encoderDrive(DRIVE_SPEED, 5, 5.0);
-
-
-//        encoderStrafeDrive(0.7, -11, 5.0);
-
-
-       // servoGrabber.setPosition(0);
-        //sleep(2000);
-
-        //rotate(-80, 0.5);
-
+//        rotate(-87, 0.2);
+        checkForBridgeTape();
+        encoderStrafeDrive(DRIVE_SPEED, 50.5, 5.0);
 
 
 
@@ -423,6 +416,93 @@ public class MechanumAutonTest extends LinearOpMode {
 
     //end encoder drive stuff
 
+    //encoder lift
+    public void encoderLift(double maxspeed, double ticks, double timeoutS) {
+        int newLeftArmTarget;
+        int newMiddleArmTarget;
+        int newRightArmTarget;
+
+        double currentLeftArmPower;
+        double currentMiddleArmPower;
+        double currentRightArmPower;
+
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            newLeftArmTarget = leftArmDrive.getCurrentPosition() + (int) (ticks);
+            newMiddleArmTarget = middleArmDrive.getCurrentPosition() + (int) (ticks);
+            newRightArmTarget = rightArmDrive.getCurrentPosition() + (int) (ticks);
+
+            leftArmDrive.setTargetPosition(newLeftArmTarget);
+            middleArmDrive.setTargetPosition(newMiddleArmTarget);
+            rightArmDrive.setTargetPosition(newRightArmTarget);
+
+            // Turn On RUN_TO_POSITION
+            leftArmDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            middleArmDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightArmDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            runtime.reset();
+
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (leftArmDrive.isBusy()|| middleArmDrive.isBusy() || rightArmDrive.isBusy())) {
+
+                currentLeftArmPower = leftArmDrive.getPower();
+                currentMiddleArmPower = middleArmDrive.getPower();
+                currentRightArmPower = rightArmDrive.getPower();
+
+                if(currentLeftArmPower < maxspeed){
+                    leftArmDrive.setPower(currentLeftArmPower + 0.01);
+                }
+                if(currentMiddleArmPower < maxspeed){
+                    middleArmDrive.setPower(currentMiddleArmPower + 0.01);
+                }
+                if(currentRightArmPower < maxspeed){
+                    rightArmDrive.setPower(currentRightArmPower + 0.01);
+                }
+
+                // Display it for the driver.
+                telemetry.addData("LeftArm Target: ", currentLeftArmPower);
+                telemetry.addData("MiddleArm Target: ", currentMiddleArmPower);
+                telemetry.addData("RightArm Target: ", currentRightArmPower);
+
+                telemetry.addData("LeftArm Pos", frontLeftDrive.getCurrentPosition());
+                telemetry.addData("MiddleArm Pos", frontRightDrive.getCurrentPosition());
+                telemetry.addData("RightArm Pos", backLeftDrive.getCurrentPosition());
+
+                telemetry.addData("LeftArm Power", leftArmDrive.getPower());
+                telemetry.addData("MiddleArm Power", middleArmDrive.getPower());
+                telemetry.addData("RightArm Power", rightArmDrive.getPower());
+                telemetry.update();
+            }
+
+            if(leftArmDrive.getCurrentPosition() <= 22 || rightArmDrive.getCurrentPosition() <= 22 || middleArmDrive.getCurrentPosition() <= 22){
+                // Apply stall torque;
+                leftArmDrive.setPower(-0.1);
+                middleArmDrive.setPower(-0.1);
+                rightArmDrive.setPower(-0.1);
+            } else {
+                // Stop all motion;
+                leftArmDrive.setPower(0);
+                middleArmDrive.setPower(0);
+                rightArmDrive.setPower(0);
+            }
+
+            // Turn off RUN_TO_POSITION
+            leftArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            middleArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        }
+    }
+
+    //end encoder lift
+
+
+
 
     ///gyro stuff
 
@@ -578,7 +658,7 @@ public class MechanumAutonTest extends LinearOpMode {
         boolean skystoneseen = false;
 
         // Loop until we are asked to stop
-        while (opModeIsActive() && !skystoneseen) {
+        while (opModeIsActive() && !skystoneseen && (runtime.seconds() < 5.0)) {
             // Read the sensor
             NormalizedRGBA colors = colorSensor.getNormalizedColors();
 
@@ -665,7 +745,64 @@ public class MechanumAutonTest extends LinearOpMode {
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+
+    protected void checkForBridgeTape(){
+
+        // values is a reference to the hsvValues array.
+        float[] hsvValues = new float[3];
+        final float values[] = hsvValues;
+
+        boolean tapeseen = false;
+
+        // Loop until we are asked to stop
+        while (opModeIsActive() && !tapeseen && (runtime.seconds() < 5.0)) {
+            // Read the sensor
+            NormalizedRGBA colors = tapeColorSensor.getNormalizedColors();
+
+            float max = Math.max(Math.max(Math.max(colors.red, colors.green), colors.blue), colors.alpha);
+            colors.red   /= max;
+            colors.green /= max;
+            colors.blue  /= max;
+            int color = colors.toColor();
+
+            // convert the RGB values to HSV values.
+            Color.RGBToHSV(Color.red(color), Color.green(color), Color.blue(color), hsvValues);
+
+            float colorCondition;
+            float r = Color.red(color);
+            float g = Color.green(color);
+            float b = Color.blue(color);
+            colorCondition = (r * g) / (b * b);
+
+            if(colorCondition < 1){
+                tapeseen = true;
+                frontLeftDrive.setPower(0);
+                frontRightDrive.setPower(0);
+                backLeftDrive.setPower(0);
+                backRightDrive.setPower(0);
+//                encoderStrafeDrive(0.4, 6, 7.0);
+//                break;
+            } else {
+                tapeseen = false;
+                frontLeftDrive.setPower(0.5);
+                frontRightDrive.setPower(-0.5);
+                backLeftDrive.setPower(-0.5);
+                backRightDrive.setPower(0.5);
+            }
+
+//            telemetry.addData("Color Condition", colorCondition);
+            telemetry.addData("Tape:", tapeseen);
+            telemetry.update();
+
+        }
+
+        // Turn off RUN_TO_POSITION
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
     ///end color stuff
 
 }
-
