@@ -755,7 +755,7 @@ public class MechanumAutonBlue extends LinearOpMode {
         boolean tapeseen = false;
 
         // Loop until we are asked to stop
-        while (opModeIsActive() && !tapeseen && (runtime.seconds() < 5.0)) {
+        while (opModeIsActive() && !tapeseen) {
             // Read the sensor
             NormalizedRGBA colors = tapeColorSensor.getNormalizedColors();
 
