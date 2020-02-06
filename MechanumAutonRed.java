@@ -51,8 +51,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import java.sql.Driver;
 
 
-@Autonomous(name="MechanumAutonBlue", group="Pushbot")
-public class MechanumAutonBlue extends LinearOpMode {
+@Autonomous(name="MechanumAutonRed", group="Pushbot")
+public class MechanumAutonRed extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
@@ -65,9 +65,10 @@ public class MechanumAutonBlue extends LinearOpMode {
     private DcMotorEx middleArmDrive = null;
     private DcMotorEx rightArmDrive = null;
 
+    private Servo grabberExtenderServo = null;
     private Servo servoGrabber= null;
-    //private Servo leftLatchServo= null;
-    //private Servo rightLatchServo= null;
+    private Servo leftLatchServo= null;
+    private Servo rightLatchServo= null;
 
 
     private NormalizedColorSensor colorSensor = null;
@@ -106,8 +107,9 @@ public class MechanumAutonBlue extends LinearOpMode {
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "sensor_color");
         tapeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "tape_sensor_color");
         servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
-        //leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
-        //rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
+        grabberExtenderServo = hardwareMap.get(Servo.class, "grabber_extender");
+        leftLatchServo = hardwareMap.get(Servo.class, "left_latch_servo");
+        rightLatchServo = hardwareMap.get(Servo.class, "right_latch_servo");
         //servoGrabber = hardwareMap.get(Servo.class, "grabber_servo");
 
         frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -200,21 +202,35 @@ public class MechanumAutonBlue extends LinearOpMode {
 // Note: Reverse movement is obtained by setting a negative distance (not speed)
 ////////////////////////////////////////////////////////////////////////////////////
 
-//        servoGrabber.setPosition(1);
-//        sleep(1000);
-//
-//        checkForSkystone();
-//
-//        encoderDrive(DRIVE_SPEED, 14, 8.0);
-//        servoGrabber.setPosition(0);
-//        sleep(2000);
-//        encoderDrive(DRIVE_SPEED, -18, 8.0);
-//        encoderStrafeDrive(DRIVE_SPEED, 20, 5.0);
 
-//        rotate(-87, 0.2);
+
+//        grabberExtenderServo.setPosition(0.9); //continuous, so position is actually power
+//        encoderLift(-1.0, -200, 2.0);
+//        sleep(1100);
+//        grabberExtenderServo.setPosition(0.5); //continuous, so position is actually power
+//        encoderLiftDrop(2.0);
+
+
+        encoderDrive(DRIVE_SPEED, 30, 5.0);
+        encoderStrafeDrive(DRIVE_SPEED, -24, 5.0);
+
+        servoGrabber.setPosition(1);
+        sleep(1000);
+
+        checkForSkystone();
+
+        encoderDrive(DRIVE_SPEED, 14, 5.0);
+        servoGrabber.setPosition(0);
+        sleep(2000);
+        encoderDrive(DRIVE_SPEED, -18, 5.0);
+
+//        encoderStrafeDrive(DRIVE_SPEED, 20, 5.0); //replaced by check for bridge
+
+//        lock.lock();
         checkForBridgeTape();
-        encoderStrafeDrive(DRIVE_SPEED, 50.5, 5.0);
-
+//        lock.unlock();
+        encoderDrive(DRIVE_SPEED, -30, 5.0);
+        encoderStrafeDrive(DRIVE_SPEED, -10, 5.0);
 
 
 
@@ -422,10 +438,6 @@ public class MechanumAutonBlue extends LinearOpMode {
         int newMiddleArmTarget;
         int newRightArmTarget;
 
-        double currentLeftArmPower;
-        double currentMiddleArmPower;
-        double currentRightArmPower;
-
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
@@ -450,24 +462,14 @@ public class MechanumAutonBlue extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (leftArmDrive.isBusy()|| middleArmDrive.isBusy() || rightArmDrive.isBusy())) {
 
-                currentLeftArmPower = leftArmDrive.getPower();
-                currentMiddleArmPower = middleArmDrive.getPower();
-                currentRightArmPower = rightArmDrive.getPower();
-
-                if(currentLeftArmPower < maxspeed){
-                    leftArmDrive.setPower(currentLeftArmPower + 0.01);
-                }
-                if(currentMiddleArmPower < maxspeed){
-                    middleArmDrive.setPower(currentMiddleArmPower + 0.01);
-                }
-                if(currentRightArmPower < maxspeed){
-                    rightArmDrive.setPower(currentRightArmPower + 0.01);
-                }
+                leftArmDrive.setPower(-1.0);
+                middleArmDrive.setPower(-1.0);
+                rightArmDrive.setPower(-1.0);
 
                 // Display it for the driver.
-                telemetry.addData("LeftArm Target: ", currentLeftArmPower);
-                telemetry.addData("MiddleArm Target: ", currentMiddleArmPower);
-                telemetry.addData("RightArm Target: ", currentRightArmPower);
+                telemetry.addData("LeftArm Target: ", leftArmDrive.getPower());
+                telemetry.addData("MiddleArm Target: ", middleArmDrive.getPower());
+                telemetry.addData("RightArm Target: ", rightArmDrive.getPower());
 
                 telemetry.addData("LeftArm Pos", frontLeftDrive.getCurrentPosition());
                 telemetry.addData("MiddleArm Pos", frontRightDrive.getCurrentPosition());
@@ -496,6 +498,75 @@ public class MechanumAutonBlue extends LinearOpMode {
             middleArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             rightArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        }
+    }
+
+    public void encoderLiftDrop(double timeoutS) {
+        int newLeftArmTarget;
+        int newMiddleArmTarget;
+        int newRightArmTarget;
+
+        double currentLeftArmPower;
+        double currentMiddleArmPower;
+        double currentRightArmPower;
+
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            newLeftArmTarget = 20;
+            newMiddleArmTarget = 20;
+            newRightArmTarget = 20;
+
+            leftArmDrive.setTargetPosition(newLeftArmTarget);
+            middleArmDrive.setTargetPosition(newMiddleArmTarget);
+            rightArmDrive.setTargetPosition(newRightArmTarget);
+
+            // Turn On RUN_TO_POSITION
+            leftArmDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            middleArmDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightArmDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            runtime.reset();
+
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (leftArmDrive.isBusy()|| middleArmDrive.isBusy() || rightArmDrive.isBusy())) {
+
+                currentLeftArmPower = leftArmDrive.getPower();
+                currentMiddleArmPower = middleArmDrive.getPower();
+                currentRightArmPower = rightArmDrive.getPower();
+
+                if(currentLeftArmPower < 0.4){
+                    leftArmDrive.setPower(currentLeftArmPower + 0.01);
+                }
+                if(currentMiddleArmPower < 0.4){
+                    middleArmDrive.setPower(currentMiddleArmPower + 0.01);
+                }
+                if(currentRightArmPower < 0.4){
+                    rightArmDrive.setPower(currentRightArmPower + 0.01);
+                }
+
+                // Display it for the driver.
+                telemetry.addData("LeftArm Target: ", currentLeftArmPower);
+                telemetry.addData("MiddleArm Target: ", currentMiddleArmPower);
+                telemetry.addData("RightArm Target: ", currentRightArmPower);
+
+                telemetry.addData("LeftArm Pos", frontLeftDrive.getCurrentPosition());
+                telemetry.addData("MiddleArm Pos", frontRightDrive.getCurrentPosition());
+                telemetry.addData("RightArm Pos", backLeftDrive.getCurrentPosition());
+
+                telemetry.addData("LeftArm Power", leftArmDrive.getPower());
+                telemetry.addData("MiddleArm Power", middleArmDrive.getPower());
+                telemetry.addData("RightArm Power", rightArmDrive.getPower());
+                telemetry.update();
+            }
+
+            // Turn off RUN_TO_POSITION
+            leftArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            middleArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightArmDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
 
@@ -780,8 +851,9 @@ public class MechanumAutonBlue extends LinearOpMode {
                 frontRightDrive.setPower(0);
                 backLeftDrive.setPower(0);
                 backRightDrive.setPower(0);
-//                encoderStrafeDrive(0.4, 6, 7.0);
-//                break;
+//                rotate(84, 0.4);
+                encoderStrafeDrive(1.0, 30, 5.0);
+                break;
             } else {
                 tapeseen = false;
                 frontLeftDrive.setPower(0.5);
