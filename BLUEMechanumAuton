@@ -51,8 +51,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import java.sql.Driver;
 
 
-@Autonomous(name="MechanumAutonBlue", group="Pushbot")
-public class MechanumAutonBlue extends LinearOpMode {
+@Autonomous(name="BLUEMechanumAuton", group="Pushbot")
+public class BLUEMechanumAuton extends LinearOpMode {
 
     /* Declare OpMode members. */
     private ElapsedTime runtime = new ElapsedTime();
