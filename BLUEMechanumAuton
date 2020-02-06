@@ -852,7 +852,7 @@ public class BLUEMechanumAuton extends LinearOpMode {
                 backLeftDrive.setPower(0);
                 backRightDrive.setPower(0);
 //                rotate(84, 0.4);
-                encoderStrafeDrive(1.0, 30, 5.0);
+                encoderStrafeDrive(1.0, -30, 5.0);
                 break;
             } else {
                 tapeseen = false;
