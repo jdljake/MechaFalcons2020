@@ -49,6 +49,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.sql.Driver;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 @Autonomous(name="REDPlanBAuton", group="Pushbot")
@@ -69,6 +71,8 @@ public class REDPlanBAuton extends LinearOpMode {
     private Servo servoGrabber= null;
     private Servo leftLatchServo= null;
     private Servo rightLatchServo= null;
+
+    static final Lock lock = new ReentrantLock();
 
 
     private NormalizedColorSensor colorSensor = null;
@@ -202,26 +206,34 @@ public class REDPlanBAuton extends LinearOpMode {
 // Note: Reverse movement is obtained by setting a negative distance (not speed)
 ////////////////////////////////////////////////////////////////////////////////////
 
+//        lock.lock();
+//            grabberExtenderServo.setPosition(0.9); //continuous, so position is actually power
+//            encoderLift(-1.0, -200, 2.0);
+//            sleep(1100);
+//            grabberExtenderServo.setPosition(0.5); //continuous, so position is actually power
+//            leftArmDrive.setPower(0);
+//            middleArmDrive.setPower(0);
+//            rightArmDrive.setPower(0);
+//            servoGrabber.setPosition(1);
+//            sleep(1000);
+//        lock.unlock();
 
-        grabberExtenderServo.setPosition(0.9); //continuous, so position is actually power
-        encoderLift(-1.0, -200, 2.0);
-        sleep(1100);
-        grabberExtenderServo.setPosition(0.5); //continuous, so position is actually power
-        encoderLiftDrop(2.0);
+//        encoderDrive(DRIVE_SPEED, 18, 5.0);
 
-        servoGrabber.setPosition(1);
-        sleep(1000);
+        lock.lock();
+            checkForSkystone();
+        lock.unlock();
 
-        encoderDrive(DRIVE_SPEED, 18, 5.0);
+        lock.lock();
+            encoderDrive(DRIVE_SPEED, 14, 5.0);
+            servoGrabber.setPosition(0);
+            sleep(2000);
+            encoderDrive(DRIVE_SPEED, -18, 5.0);
+        lock.unlock();
 
-        checkForSkystone();
-
-        encoderDrive(DRIVE_SPEED, 14, 5.0);
-        servoGrabber.setPosition(0);
-        sleep(2000);
-        encoderDrive(DRIVE_SPEED, -18, 5.0);
-
-        checkForBridgeTape();
+        lock.lock();
+            checkForBridgeTape();
+        lock.unlock();
 
         rotate(90, 0.3);
 
@@ -750,10 +762,10 @@ public class REDPlanBAuton extends LinearOpMode {
                 break;
             } else {
                 skystoneseen = false;
-                frontLeftDrive.setPower(0.5);
-                frontRightDrive.setPower(-0.5);
-                backLeftDrive.setPower(-0.5);
-                backRightDrive.setPower(0.5);
+                frontLeftDrive.setPower(-0.5);
+                frontRightDrive.setPower(0.5);
+                backLeftDrive.setPower(0.5);
+                backRightDrive.setPower(-0.5);
             }
 
 //            telemetry.addData("Color Condition", colorCondition);
@@ -783,10 +795,10 @@ public class REDPlanBAuton extends LinearOpMode {
 
             if(colorCondition < 2){
                 skystoneseen = true;
-                frontLeftDrive.setPower(0.5);
-                frontRightDrive.setPower(-0.5);
-                backLeftDrive.setPower(-0.5);
-                backRightDrive.setPower(0.5);
+                frontLeftDrive.setPower(-0.5);
+                frontRightDrive.setPower(0.5);
+                backLeftDrive.setPower(0.5);
+                backRightDrive.setPower(-0.5);
             } else {
                 skystoneseen = false;
                 frontLeftDrive.setPower(0);
@@ -837,7 +849,7 @@ public class REDPlanBAuton extends LinearOpMode {
             float b = Color.blue(color);
             colorCondition = (r * g) / (b * b);
 
-            if(colorCondition < 1){
+            if(colorCondition > 3){
                 tapeseen = true;
                 frontLeftDrive.setPower(0);
                 frontRightDrive.setPower(0);
