@@ -752,10 +752,10 @@ public class BLUEPlanBAuton extends LinearOpMode {
                 break;
             } else {
                 skystoneseen = false;
-                frontLeftDrive.setPower(-0.5);
-                frontRightDrive.setPower(0.5);
-                backLeftDrive.setPower(0.5);
-                backRightDrive.setPower(-0.5);
+                frontLeftDrive.setPower(0.5);
+                frontRightDrive.setPower(-0.5);
+                backLeftDrive.setPower(-0.5);
+                backRightDrive.setPower(0.5);
             }
 
 //            telemetry.addData("Color Condition", colorCondition);
@@ -785,10 +785,10 @@ public class BLUEPlanBAuton extends LinearOpMode {
 
             if(colorCondition < 2){
                 skystoneseen = true;
-                frontLeftDrive.setPower(-0.5);
-                frontRightDrive.setPower(0.5);
-                backLeftDrive.setPower(0.5);
-                backRightDrive.setPower(-0.5);
+                frontLeftDrive.setPower(0.5);
+                frontRightDrive.setPower(-0.5);
+                backLeftDrive.setPower(-0.5);
+                backRightDrive.setPower(0.5);
             } else {
                 skystoneseen = false;
                 frontLeftDrive.setPower(0);
@@ -839,7 +839,7 @@ public class BLUEPlanBAuton extends LinearOpMode {
             float b = Color.blue(color);
             colorCondition = (r * g) / (b * b);
 
-            if(colorCondition < 1){
+            if(colorCondition < 0.4){
                 tapeseen = true;
                 frontLeftDrive.setPower(0);
                 frontRightDrive.setPower(0);
