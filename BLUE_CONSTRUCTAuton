@@ -198,7 +198,7 @@ public class BLUE_CONSTRUCTAuton extends LinearOpMode {
         leftLatchServo.setPosition(1);
         rightLatchServo.setPosition(0);
         sleep(2000);
-        encoderDrive(DRIVE_SPEED, 20, 5.0);
+        encoderDrive(DRIVE_SPEED, 10, 5.0);
         rotate(-90, 0.5);
         encoderStrafeDrive(DRIVE_SPEED, 10, 5.0);
         leftLatchServo.setPosition(0);
