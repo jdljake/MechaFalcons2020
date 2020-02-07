@@ -209,12 +209,10 @@ public class REDPlanBAuton extends LinearOpMode {
         grabberExtenderServo.setPosition(0.5); //continuous, so position is actually power
         encoderLiftDrop(2.0);
 
-
-        encoderDrive(DRIVE_SPEED, 30, 5.0);
-        encoderStrafeDrive(DRIVE_SPEED, -24, 5.0);
-
         servoGrabber.setPosition(1);
         sleep(1000);
+
+        encoderDrive(DRIVE_SPEED, 18, 5.0);
 
         checkForSkystone();
 
